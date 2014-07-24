@@ -19,6 +19,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href='https://fonts.googleapis.com/css?family=EB+Garamond' rel='stylesheet' type='text/css'>
     <title>In Gaza</title>
     <link rel="icon" type="image/png" href="img/in-gaza-icon.png">
@@ -108,20 +109,15 @@
                   
           canvas.width = document.body.clientWidth;
           canvas.height = document.body.clientHeight;   
-                  
-          window.onresize = function() {
-            canvas.width = document.body.clientWidth;
-            canvas.height = document.body.clientHeight;
-          };
 
           var dead = JSON.parse(xhr.response);
           var cell_height = 92;
-          var cell_quarter = cell_height / 4;
-          var cell_third = cell_height / 3;
-          var cell_half = cell_height / 2;
-          var cell_two_third = cell_height * 2 / 3;
           var top = canvas.height;
-          var interval = 1000 / 15;    
+          var interval = 1000 / 15;
+          var font_size = "28px";
+          var margin_left = 64;
+
+          setSizes();
 
           dead = dead.reverse();
           dead.forEach(function(person) {
@@ -143,6 +139,10 @@
             var third_width = canvas.width / 3;
             var half_width = canvas.width / 2;
             var two_third_width = canvas.width * 2 / 3;
+            var cell_quarter = cell_height / 4;
+            var cell_third = cell_height / 3;
+            var cell_half = cell_height / 2;
+            var cell_two_third = cell_height * 2 / 3;
             var age_text;
 
             context.save();
@@ -150,7 +150,7 @@
             context.lineWidth = 1;
             context.textBaseline = "middle";
             context.textAlign = "center";
-            context.font = "28px 'EB Garamond'";
+            context.font = font_size + " 'EB Garamond'";
 
             dead.forEach(function(person, i) {
               if (current_height > canvas.height + cell_height || current_height < -cell_height) {
@@ -167,7 +167,7 @@
 
                 age_text = person.age ? "Killed at age " + person.age : "Unknown age of death";
                 context.fillStyle = "#000000";
-                context.fillText(i + 1, 64, current_height + cell_half);
+                context.fillText(i + 1, margin_left, current_height + cell_half);
                 context.fillText(age_text, half_width, current_height + cell_half);
               } else {
                 context.globalAlpha = person.line_alpha;
@@ -197,7 +197,26 @@
             context.fillRect(0, current_height, canvas.width, 1);
 
             context.restore();
-          })();
+          })();   
+
+          window.onresize = function() {
+            canvas.width = document.body.clientWidth;
+            canvas.height = document.body.clientHeight;
+
+            setSizes();
+          };
+
+          function setSizes() {
+            if (canvas.width < 500) {
+              font_size = "20px";
+              cell_height = 72;
+              margin_left = 36;
+            } else {
+              font_size = "28px";
+              cell_height = 92;
+              margin_left = 64;
+            }
+          }
 
         }
       })();
