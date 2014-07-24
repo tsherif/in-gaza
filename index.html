@@ -185,7 +185,7 @@
 
                 age_text = person.age ? "Killed at age " + person.age : "Unknown age of death";
 
-                if (person.location_of_death && canvas.width >= 800) {
+                if (person.location_of_death && canvas.width >= 450) {
                   age_text += " in " + person.location_of_death;
                 }
 
@@ -230,7 +230,7 @@
           };
 
           function setSizes() {
-            if (canvas.width < 500) {
+            if (canvas.width < 750) {
               font_size = "18px";
               cell_height = 64;
               margin_left = 36;
