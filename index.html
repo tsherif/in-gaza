@@ -150,7 +150,7 @@
             var delta = (current_time - previous_time) / 27; 
             previous_time = current_time;
 
-            top -= delta * 0.75;
+            top -= delta * 0.75 * 5;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             var current_height = top;
@@ -184,6 +184,11 @@
                 context.fillRect(0, current_height, canvas.width, cell_height);
 
                 age_text = person.age ? "Killed at age " + person.age : "Unknown age of death";
+
+                if (person.location_of_death && canvas.width >= 500) {
+                  age_text += " in " + person.location_of_death;
+                }
+
                 context.fillStyle = "#000000";
                 context.fillText(i + 1, margin_left, current_height + cell_half);
                 context.fillText(age_text, half_width, current_height + cell_half);
@@ -226,8 +231,8 @@
 
           function setSizes() {
             if (canvas.width < 500) {
-              font_size = "20px";
-              cell_height = 72;
+              font_size = "18px";
+              cell_height = 64;
               margin_left = 36;
             } else {
               font_size = "28px";
