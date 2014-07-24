@@ -121,7 +121,25 @@
 
           dead = dead.reverse();
           dead.forEach(function(person) {
+            var years, months;
+
             person.name = person.name || "Unknown name";
+
+            if (person.age % 1 !== 0) {
+              years = Math.floor(person.age);
+              months = Math.floor((person.age % 1) * 12);
+
+              person.age = "";
+              if (years > 0) {
+                person.age += years + " year"
+
+                if (years > 1) {
+                  person.age += "s";
+                } 
+                person.age += ", "
+              }
+              person.age += months + " months"
+            }
           });
 
           previous_time = timer.now();
@@ -132,7 +150,7 @@
             var delta = (current_time - previous_time) / 27; 
             previous_time = current_time;
 
-            top -= delta * 0.75;
+            top -= delta * 5//0.75;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             var current_height = top;
