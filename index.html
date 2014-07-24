@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!--
+  In Gaza: An interactive memorial to the Gazans killed during Israeli Operation Protective Edge, July 2014
+  Copyright (C) 2013  Tarek Sherif and Kevin Lo
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href='https://fonts.googleapis.com/css?family=EB+Garamond' rel='stylesheet' type='text/css'>
+    <title>In Gaza</title>
+    <link rel="icon" type="image/png" href="img/in-gaza-icon.png">
+    <meta name="description" content="An interactive memorial to the Gazans killed during Israeli Operation Protective Edge, July 2014">
+    <meta property="og:image" content="http://tsherif.github.io/in-gaza/img/in-gaza.png">
+    <meta property="og:image:secure_url" content="https://tsherif.github.io/in-gaza/img/in-gaza.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:creator" content="@thsherif">
+    <meta name="twitter:title" content="In Gaza">
+    <meta name="twitter:description" content="An interactive memorial to the Gazans killed during Israeli Operation Protective Edge, July 2014">
+    <meta name="twitter:image" content="http://tsherif.github.io/in-gaza/img/in-gaza.png">
+    <style>
+      html {
+        height: 100%;
+        overflow: hidden;
+      }
+      
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      
+      #canvas {
+        background-color: #000000;
+        width: 100%;
+        height: 100%;
+      }
+      
+      .warning {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="compatibility-warning" class="warning" style="display:none">
+      Your browser does not seem to support functionality required for this piece.<BR>
+      <a href="http://www.mozilla.org/en-US/firefox/new/">Mozilla Firefox</a> or
+      <a href="https://www.google.com/intl/en/chrome/browser/">Google Chrome</a> are recommended for best viewing.
+    </div>
+    <audio id="audio" autoplay loop>
+      <source src="audio/stefanchristoff-rebeccafoon.ogg" type="audio/ogg">
+      <source src="audio/stefanchristoff-rebeccafoon.mp3" type="audio/mpeg">
+    </audio>
+    <canvas id="canvas"></canvas>
+    <script src="js/requestAnimationFrame.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+      (function() {
+        "use strict";
+
+        if (!document.createElement("canvas")) {
+          (function() {
+             var warning = document.getElementById("compatibility-warning");
+             warning.style.display = "block";
+          })();
+          return;
+        }
+
+
+        var xhr = new XMLHttpRequest();
+        var data_url = "data/gaza.json";
+
+
+        xhr.open("GET", data_url);
+        xhr.onreadystatechange = onload;
+        xhr.send();
+
+        document.getElementById("audio").volume = 0.15;
+
+        function onload() {
+          if (xhr.readyState !== 4) {
+            return;
+          }
+
+          var status = xhr.status;
+
+          if((status < 200 || status >= 300) && status !== 304) {
+            throw new Error("Could not find " + data_url);
+          }
+
+          var canvas = document.getElementById("canvas");
+          var context = canvas.getContext("2d");
+          var timer = window.performance || window.Date;
+          var previous_time, current_time;
+          var mouse = utils.captureMouse(canvas);
+                  
+          canvas.width = document.body.clientWidth;
+          canvas.height = document.body.clientHeight;   
+                  
+          window.onresize = function() {
+            canvas.width = document.body.clientWidth;
+            canvas.height = document.body.clientHeight;
+          };
+
+          var dead = JSON.parse(xhr.response);
+          var cell_height = 92;
+          var cell_quarter = cell_height / 4;
+          var cell_third = cell_height / 3;
+          var cell_half = cell_height / 2;
+          var cell_two_third = cell_height * 2 / 3;
+          var top = canvas.height;
+          var interval = 1000 / 15;    
+
+          dead = dead.reverse();
+          dead.forEach(function(person) {
+            person.name = person.name || "Unknown name";
+          });
+
+          previous_time = timer.now();
+          (function drawFrame() {  
+            window.requestAnimationFrame(drawFrame, canvas);
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            current_time = timer.now();
+            var delta = (current_time - previous_time) / 27; 
+            previous_time = current_time;
+
+            top -= delta * 0.75;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            var current_height = top;
+            var third_width = canvas.width / 3;
+            var half_width = canvas.width / 2;
+            var two_third_width = canvas.width * 2 / 3;
+            var age_text;
+
+            context.save();
+            context.strokeStyle = "#777777";
+            context.lineWidth = 1;
+            context.textBaseline = "middle";
+            context.textAlign = "center";
+            context.font = "28px 'EB Garamond'";
+
+            dead.forEach(function(person, i) {
+              if (current_height > canvas.height + cell_height || current_height < -cell_height) {
+                current_height += cell_height;
+                return;
+              }
+              context.save();
+
+              if (mouse.y > current_height && mouse.y < current_height + cell_height &&
+                  mouse.x > third_width && mouse.x < two_third_width) {
+                context.globalAlpha = 1;
+                context.fillStyle = "#303030";
+                context.fillRect(0, current_height, canvas.width, cell_height);
+
+                age_text = person.age ? "Killed at age " + person.age : "Unknown age of death";
+                context.fillStyle = "#000000";
+                context.fillText(i + 1, 64, current_height + cell_half);
+                context.fillText(age_text, half_width, current_height + cell_half);
+              } else {
+                context.globalAlpha = person.line_alpha;
+
+                context.fillStyle = "#333333";
+                context.fillRect(0, current_height, canvas.width, 1);
+
+                context.globalAlpha = person.text_alpha;
+                context.fillStyle = "#FFFFFF";
+                context.fillText(person.name, half_width, current_height + cell_half);
+              }
+
+              context.restore();
+
+              if (person.line_alpha < 1 && current_height < canvas.height) {
+                person.line_alpha = Math.min(person.line_alpha + 0.005, 1);
+              }
+
+              if (person.text_alpha < 1 && current_height < canvas.height - cell_half) {
+                person.text_alpha = Math.min(person.text_alpha + 0.005, 1);
+              }
+
+              current_height += cell_height;
+            });
+
+            context.fillStyle = "#777777";
+            context.fillRect(0, current_height, canvas.width, 1);
+
+            context.restore();
+          })();
+
+        }
+      })();
+    </script>
+  </body>
+</html>
