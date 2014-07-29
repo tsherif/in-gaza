@@ -124,6 +124,8 @@
             var years, months;
 
             person.name = person.name || "Unknown name";
+            person.line_alpha = 0;
+            person.text_alpha = 0;
 
             if (person.age % 1 !== 0) {
               years = Math.floor(person.age);
