@@ -132,14 +132,18 @@
 
               person.age = "";
               if (years > 0) {
-                person.age += years + " year"
+                person.age += years + " year";
 
                 if (years > 1) {
                   person.age += "s";
                 } 
-                person.age += ", "
+                person.age += ", ";
               }
-              person.age += months + " months"
+              person.age += months + " month";
+
+              if (months > 1) {
+                person.age += "s";
+              } 
             }
           });
 
